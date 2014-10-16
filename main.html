@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Password Generator</title>
+<script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+<script src="//code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+<script language="JavaScript">
+// <!--
+function generate() {
+	$.ajax({
+		url: "/password",
+		data: { c: $("select#c").val(), l: $("select#l").val() },
+		success: function (data) { $("div#p").text(data); }
+	});
+}
+function getAntilogarithm() {
+	var N = [ 10, 26, 26, 29 ];
+	var c = $("select#c").val();
+	var a = 0;
+	for (var i = 0; i < N.length; i++)
+		if (c & (1 << i))
+			a += N[i];
+	return a;
+}
+function updateComplexity() {
+	var a = getAntilogarithm();
+	var c = $("select#l").val() * Math.log(a) / Math.log(10);
+	$("span#complexity").text(Math.round(c * 10000) / 10000);
+}
+function prepareClasses() {
+	var c = { "Numeric": 1,
+		  "Alphabet (UPPER)": 2,
+		  "Alphabet (UPPER) and Numeric": 3,
+		  "Alphabet (LOWER)": 4,
+		  "Alphabet (LOWER) and Numeric": 5,
+		  "Alphabet": 6,
+		  "Alphabet and Numeric": 7,
+		  "Alphabet and Numeric and Punctuation": 15 };
+	for (var t in c)
+		$("select#c").append($("<option>").val(c[t]).text(t));
+}
+function prepareLengths() {
+	var lengths = [ 8, 12, 16, 24, 28, 32, 36, 40, 48, 56, 64, 72, 80 ];
+	for (var i = 0; i < lengths.length; i++) {
+		var l = lengths[i];
+		$("select#l").append($("<option>").val(l).text(l));
+	}
+}
+function prepareInputForm() {
+	prepareClasses();
+	prepareLengths();
+}
+// -->
+</script>
+<style type="text/css">
+div.m, form {
+	width: 18em;
+}
+div.i {
+	padding: 0.75ex 0;
+}
+div#b {
+	height: 3em;
+}
+div#b > input {
+	margin: 1em 8em;
+}
+div#p {
+	height: 1em;
+	white-space: nowrap;
+}
+</style>
+</head>
+<body onLoad="prepareInputForm();">
+<form>
+	<fieldset>
+		<legend>Source</legend>
+		<div class="i">
+			<select id="c" onchange="updateComplexity();"></select>
+		</div>
+		<div class="i">
+			<span>Length</span>
+			<select id="l" onchange="updateComplexity();"></select>
+		</div>
+	</fieldset>
+	<fieldset>
+		<legend>Complexity</legend>
+		<div align="center">
+			<span id="complexity">8</span>
+		</div>
+	</fieldset>
+</form>
+<div class="m" id="b">
+	<input onclick="generate();" type="button" value="Generate" />
+</div>
+<div class="m">
+	<fieldset>
+		<legend>Result</legend>
+		<div id="p"></div>
+	</fieldset>
+</div>
+</body>
+</html>
