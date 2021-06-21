@@ -37,7 +37,7 @@ var genPassword = function (req, res, err, fd) {
 		res.writeHead(200, { 'ContentType': 'text/plain' });
 		res.end(str);
 	};
-	var query = url.parse(req.url, true).query;
+	var query = new url.URL(req.url).query;
 	var str = '';
 	var mask = 0;
 	onRead = function (err, len, buf) {
@@ -59,11 +59,11 @@ var genPassword = function (req, res, err, fd) {
 		mask = 0;
 		doRead(buf);
 	};
-	doRead(new Buffer(1));
+	doRead(Buffer.alloc(1));
 };
 
 var respondHTML = function (req, res, err, fd) {
-	var buf = new Buffer(64 * 1024);
+	var buf = Buffer.alloc(64 * 1024);
 	fs.read(fd, buf, 0, buf.length, 0, function (err, len, buf) {
 		fs.close(fd, function (err) {
 		});
@@ -77,20 +77,20 @@ var handlers = {
 	'/password': { 'file': '/dev/urandom', 'func': genPassword },
 };
 
-fs.writeFileSync('/var/run/pwgen.pid', process.pid);
+fs.writeFileSync('/var/run/pwgen.pid', '' + process.pid);
 
 process.setgid(65534);
 process.setuid(65534);
 
 var http = require('http');
 http.createServer(function (req, res) {
-	console.log("[%s] %s %s %j", req.connection.remoteAddress,
+	console.log("[%s] %s %s %j", req.remoteAddress,
 		req.method, req.url, req.headers);
 	var doFail = function (status) {
 		res.writeHead(status);
 		res.end();
 	};
-	var path = url.parse(req.url, true).pathname;
+	var path = new url.URL(req.url).pathname;
 	var ctx = handlers[path];
 	if (ctx)
 		fs.open(ctx.file, 'r', 0400, function (err, fd) {
