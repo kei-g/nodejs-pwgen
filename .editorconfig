@@ -18,4 +18,5 @@ indent_style = space
 tab_width = 2
 
 [*.md]
+max_line_length = off
 trim_trailing_whitespace = false
